@@ -1,5 +1,16 @@
 # regex used to generate this: ^\([0-9]+\)\s-+\([a-zA-Z ’å]+\)\s-+.*
 
+gemtypes = {
+    "Fire": 0,
+    "Air": 1,
+    "Water": 2,
+    "Earth": 3,
+    "Astral": 4,
+    "Death": 5,
+    "Nature": 6,
+    "Blood slave": 7
+}
+
 nations = {
     "ea": {
         "Arcoscephale": 5,
@@ -103,11 +114,9 @@ nations = {
 
 
 def get_different_nation(nation):
-    age = nation[0]
-    name = nation[1]
-    for (nation, index) in nations[age].items():
-        if nation != name:
-            return (age, nation)
+    for (othernation, index) in nations[nation.age.lower()].items():
+        if othernation != nation.name:
+            return index
 
 
 land_start_province = 5

@@ -1,0 +1,19 @@
+{
+    "age": "EA",
+    "nation": "Ulm",
+    "player": [{
+        "type": "Warrior Chief",
+        "items": [],
+        "units": {
+            "Axe Warrior": 20,
+            "Steel Maiden": 30
+        }
+    }],
+    "enemy": [{
+        "type": "Necromancer",
+        "items": [],
+        "units": {
+            "Longdead Horseman": 40
+        }
+    }]
+}
