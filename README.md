@@ -12,11 +12,14 @@ be installed in Dominions, as the script reuses assets from the Arena map.
 The script can be used both interactively and noninteractively, with a configuration file.
 
 To run interactively, just run "./dom5battler.py". The script will then query you for a name, your
-nation and age, your commanders and units and enemy commanders and units. Enemy units will be put
-into province 10, the center province.
+nation and age, your commanders, items and units and enemy commanders, items and units. Enemy units
+will be put into province 10, the center province.
 
-To run noninteractively, run ```./dom5battler.py -f example.conf```. This will read the example
+To run noninteractively, run ```./dom5battler.py -f example.json```. This will read the example
 file and create a map for you.
+
+Using the config file, you can also set up two human-controlled nations to test out more complicated
+constellations. Have a look at ```twoplayer.json``` for how this is set up.
 
 After running, you will have a ```<name>.map``` file. Copy this to your Dominions map folder, and
 create a new game, selecting the map. There will be exactly two nations available, select the one
@@ -41,4 +44,4 @@ need to specify ```-d <userdir>``` so the script knows where to put the generate
 
 ## TBD
 
-Items and Terrain is currently still TBD.
+Terrain is currently still TBD.
