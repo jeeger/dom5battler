@@ -97,7 +97,7 @@ def convert_units(config):
         for (name_or_id, count) in army['units'].items():
             units.append(Unit(name_or_id, count))
         result.append(Army(
-            army['type'],
+            army['commander'],
             army['items'],
             units))
     return result
@@ -109,9 +109,14 @@ def from_file(filename):
     # Case sensitive option names
     conf = {}
     conf['battlename'] = os.path.splitext(os.path.basename(filename))[0]
-    conf['nation'] = Nation(raw_conf['age'], raw_conf['nation'])
-    conf['playerarmies'] = convert_units(raw_conf['player'])
-    conf['enemyarmies'] = convert_units(raw_conf['enemy'])
+    conf['player_1_nation'] = Nation(raw_conf['age'],
+                                     raw_conf['player_1']['nation'])
+    conf['player_1_armies'] = convert_units(raw_conf['player_1']['armies'])
+    conf['centerarmies'] = convert_units(raw_conf['center'])
+    if 'player_2' in raw_conf:
+        conf['player_2_nation'] = Nation(raw_conf['age'],
+                                         raw_conf['player_2']['nation'])
+        conf['player_2_armies'] = convert_units(raw_conf['player_2']['armies'])
     return conf
 
 
@@ -126,10 +131,10 @@ def interactive():
           "commander should have, separated by commas.\n"
           "Finally, enter unit name and quantity separated by comma.\n"
           "Finish by entering a bare dot.")
-    result['playerarmies'] = read_repeated("== Army ==\n",
+    result['player_1_armies'] = read_repeated("== Army ==\n",
                                            lambda: read_army(""))
     print("Construct enemy armies the same way.\n")
-    result['enemyarmies'] = read_repeated("== Army ==\n",
+    result['centerarmies'] = read_repeated("== Army ==\n",
                                           lambda: read_army(""))
     return result
 
@@ -159,23 +164,33 @@ def main():
         conf = interactive()
 
     print("Configuration: ")
-    print(f"Your nation: {conf['nation'].age} {conf['nation'].name}")
+    print(f"P1 nation: {conf['player_1_nation'].age} {conf['player_1_nation'].name}")
     print("Your armies: ")
-    for (armycount, army) in enumerate(conf['playerarmies']):
+    for (armycount, army) in enumerate(conf['player_1_armies']):
         print(f"Army {armycount}:")
         print(f"\tCommander: {army.commander_type}")
         print(f"\tItems: {army.items}")
         for unit in army.units:
             print(f"\t\t{unit.count}x {unit.unit_type}")
 
-    print("Enemy armies: ")
-    for (armycount, army) in enumerate(conf['enemyarmies']):
+    print("Center armies: ")
+    for (armycount, army) in enumerate(conf['centerarmies']):
         print(f"Army {armycount}:")
         print(f"\tCommander: {army.commander_type}")
         print(f"\tItems: {army.items}")
         print("\tUnits:")
         for unit in army.units:
             print(f"\t\t{unit.count}x {unit.unit_type}")
+
+    if 'player_2_armies' in conf:
+        print(f"P2 nation: {conf['player_2_nation'].age} {conf['player_2_nation'].name}")
+        print("Your armies: ")
+        for (armycount, army) in enumerate(conf['player_1_armies']):
+            print(f"Army {armycount}:")
+            print(f"\tCommander: {army.commander_type}")
+            print(f"\tItems: {army.items}")
+            for unit in army.units:
+                print(f"\t\t{unit.count}x {unit.unit_type}")
 
     if args.domdir:
         map_out = open(os.path.join(args.domdir, "maps",
@@ -185,11 +200,15 @@ def main():
 
     with contextlib.redirect_stdout(map_out):
         Map.print_map_header(conf['battlename'])
-        Map.print_player_setup(conf['nation'])
-        Map.print_units(Constants.land_start_province,
-                        conf['playerarmies'], clear=False)
+        Map.print_player_setup(conf['player_1_nation'],
+                               conf.get('player_2_nation', None))
+        Map.print_units(Constants.player_1_start_province,
+                        conf['player_1_armies'], clear=False)
         Map.print_units(Constants.battle_province,
-                        conf['enemyarmies'])
+                        conf['centerarmies'])
+        if 'player_2_armies' in conf:
+            Map.print_units(Constants.player_2_start_province,
+                            conf['player_2_armies'], clear=False)
         Map.print_rest()
 
     if args.mod:

@@ -11,6 +11,38 @@ gemtypes = {
     "Blood slave": 7
 }
 
+terraintypes = {
+    "Plains": 0,
+    "Small Province": 1,
+    "Large Province": 2,
+    "Sea": 4,
+    "Freshwater": 8,
+    "Highlands": 16,
+    "Swamp": 32,
+    "Waste": 64,
+    "Forest": 128,
+    "Farm": 256,
+    "Nostart": 512,
+    "Many Sites": 1024,
+    "Deep Sea": 2048,
+    "Cave": 4096,
+    "Mountains": 4194304,
+    "Good throne location": 16777216,
+    "Good start location": 33554432,
+    "Bad throne location": 67108864,
+    "Warmer": 536870912,
+    "Colder": 1073741824,
+    "Fire sites": 8192,
+    "Air sites": 16384,
+    "Water sites": 32768,
+    "Earth sites": 65536,
+    "Astral sites": 131072,
+    "Death sites": 262144,
+    "Nature sites": 524288,
+    "Blood sites": 1048576,
+    "Holy sites": 2097152,
+}
+
 nations = {
     "ea": {
         "Arcoscephale": 5,
@@ -119,6 +151,6 @@ def get_different_nation(nation):
             return index
 
 
-land_start_province = 5
-ai_land_start_province = 8
+player_1_start_province = 5
+player_2_start_province = 8
 battle_province = 10

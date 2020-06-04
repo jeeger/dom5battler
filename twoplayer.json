@@ -11,11 +11,15 @@
             }
         }]
     },
-    "center": [{
-        "commander": "Necromancer",
-        "items": [],
-        "units": {
-            "Longdead Horseman": 40
-        }
-    }]
+    "center": [],
+    "player_2": {
+        "nation": "Sauromatia",
+        "armies": [{
+            "commander": "Warrior Sorceress",
+            "items": [],
+            "units": {
+                "Raider": 30
+            }
+        }]
+    }
 }
