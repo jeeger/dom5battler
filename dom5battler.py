@@ -4,90 +4,10 @@ import contextlib
 import argparse
 import os.path
 import os
-import collections
 
 import Map
 import Constants
-
-
-Army = collections.namedtuple("Army", ["commander_type", "items", "units"])
-Unit = collections.namedtuple("Unit", ["unit_type", "count"])
-Nation = collections.namedtuple("Nation", ["age", "name"])
-
-
-class QuitEntryException(Exception):
-    pass
-
-
-def read_nonempty(prompt, allow_empty=False, quit=None, mapper=None):
-    line = input(prompt)
-    while not line and not allow_empty:
-        print("Please enter something.")
-        line = input(prompt)
-    if line == quit:
-        raise QuitEntryException
-    if mapper:
-        return mapper(line)
-    return line
-
-
-def read_repeated(prompt, readfun, quit=None, mapper=None):
-    result = []
-    try:
-        while True:
-            line = readfun()
-            if mapper:
-                result.append(mapper(line))
-            else:
-                result.append(line)
-    except QuitEntryException:
-        return result
-
-
-def read_multiple(prompt, count, mapper=None, quit=None):
-    line = read_nonempty(prompt, quit=quit)
-    line = tuple(map(str.strip, line.split(",")))
-    while len(line) != count:
-        print(f"Enter exactly {count} items.")
-        line = read_nonempty(prompt, quit=quit)
-        line = tuple(map(str.strip, line.split(",")))
-    if mapper and len(mapper) == count:
-        return tuple(map(lambda t: t[1](t[0]) if t[1] else t[0],
-                         zip(line, mapper)))
-    elif mapper and len(mapper) != count:
-        print("Provide a mapper for each field. `None` is identity "
-              "function.")
-        exit(1)
-    return line
-
-
-def read_list(prompt, mapper=None, quit=None):
-    try:
-        line = read_nonempty(prompt, quit=quit, allow_empty=True)
-    except QuitEntryException:
-        return []
-    if not line:
-        return []
-    if mapper:
-        return list(map(lambda e: mapper(str.strip(e)), line.split(",")))
-    return list(map(str.strip, line.split(",")))
-
-
-def make_multiple_reader(prompt, count, mapper, quit):
-    def readerfn():
-        return read_multiple(prompt, count, mapper=mapper, quit=quit)
-    return readerfn
-
-
-def read_army(prompt, mapper=None, quit="."):
-    commander_type = read_nonempty("Commander name/ID: ", quit=quit)
-    items = read_list("Items: ", quit=quit)
-    units = read_repeated("Units\n",
-                          make_multiple_reader(
-                              "Unit name/ID, quantity: ", 2,
-                              [None, int], quit=quit),
-                          quit=quit, mapper=lambda x: Unit(*x))
-    return Army(commander_type, items, units)
+import Input
 
 
 def convert_units(config):
@@ -95,8 +15,8 @@ def convert_units(config):
     for army in config:
         units = []
         for (name_or_id, count) in army['units'].items():
-            units.append(Unit(name_or_id, count))
-        result.append(Army(
+            units.append(Constants.Unit(name_or_id, count))
+        result.append(Constants.Army(
             army['commander'],
             army['items'],
             units))
@@ -109,34 +29,15 @@ def from_file(filename):
     # Case sensitive option names
     conf = {}
     conf['battlename'] = os.path.splitext(os.path.basename(filename))[0]
-    conf['player_1_nation'] = Nation(raw_conf['age'],
-                                     raw_conf['player_1']['nation'])
+    conf['player_1_nation'] = Constants.Nation(
+        raw_conf['age'], raw_conf['player_1']['nation'])
     conf['player_1_armies'] = convert_units(raw_conf['player_1']['armies'])
     conf['centerarmies'] = convert_units(raw_conf['center'])
     if 'player_2' in raw_conf:
-        conf['player_2_nation'] = Nation(raw_conf['age'],
-                                         raw_conf['player_2']['nation'])
+        conf['player_2_nation'] = Constants.Nation(
+            raw_conf['age'], raw_conf['player_2']['nation'])
         conf['player_2_armies'] = convert_units(raw_conf['player_2']['armies'])
     return conf
-
-
-def interactive():
-    result = {}
-    result['battlename'] = read_nonempty("Name for this battle: ")
-    result['nation'] = Nation(*read_multiple(
-        "Which nation do you want to play? Enter age (EA, MA, LA) "
-        "and name, separated by commas.\nNation: ", 2))
-    print("Construct your armies.\n"
-          "Enter commander name or ID, then enter all items this "
-          "commander should have, separated by commas.\n"
-          "Finally, enter unit name and quantity separated by comma.\n"
-          "Finish by entering a bare dot.")
-    result['player_1_armies'] = read_repeated("== Army ==\n",
-                                           lambda: read_army(""))
-    print("Construct enemy armies the same way.\n")
-    result['centerarmies'] = read_repeated("== Army ==\n",
-                                          lambda: read_army(""))
-    return result
 
 
 def main():
@@ -161,7 +62,7 @@ def main():
     if args.file:
         conf = from_file(args.file)
     else:
-        conf = interactive()
+        conf = Input.interactive()
 
     print("Configuration: ")
     print(f"P1 nation: {conf['player_1_nation'].age} {conf['player_1_nation'].name}")
@@ -170,17 +71,19 @@ def main():
         print(f"Army {armycount}:")
         print(f"\tCommander: {army.commander_type}")
         print(f"\tItems: {army.items}")
-        for unit in army.units:
-            print(f"\t\t{unit.count}x {unit.unit_type}")
-
-    print("Center armies: ")
-    for (armycount, army) in enumerate(conf['centerarmies']):
-        print(f"Army {armycount}:")
-        print(f"\tCommander: {army.commander_type}")
-        print(f"\tItems: {army.items}")
         print("\tUnits:")
         for unit in army.units:
             print(f"\t\t{unit.count}x {unit.unit_type}")
+
+    if 'centerarmies' in conf:
+        print("Center armies: ")
+        for (armycount, army) in enumerate(conf['centerarmies']):
+            print(f"Army {armycount}:")
+            print(f"\tCommander: {army.commander_type}")
+            print(f"\tItems: {army.items}")
+            print("\tUnits:")
+            for unit in army.units:
+                print(f"\t\t{unit.count}x {unit.unit_type}")
 
     if 'player_2_armies' in conf:
         print(f"P2 nation: {conf['player_2_nation'].age} {conf['player_2_nation'].name}")
@@ -189,6 +92,7 @@ def main():
             print(f"Army {armycount}:")
             print(f"\tCommander: {army.commander_type}")
             print(f"\tItems: {army.items}")
+            print(f"\tUnits:")
             for unit in army.units:
                 print(f"\t\t{unit.count}x {unit.unit_type}")
 
@@ -203,12 +107,11 @@ def main():
         Map.print_player_setup(conf['player_1_nation'],
                                conf.get('player_2_nation', None))
         Map.print_units(Constants.player_1_start_province,
-                        conf['player_1_armies'], clear=False)
+                        conf.get('player_1_armies'), clear=False)
         Map.print_units(Constants.battle_province,
-                        conf['centerarmies'])
-        if 'player_2_armies' in conf:
-            Map.print_units(Constants.player_2_start_province,
-                            conf['player_2_armies'], clear=False)
+                        conf.get('centerarmies', []))
+        Map.print_units(Constants.player_2_start_province,
+                        conf.get('player_2_armies', []), clear=False)
         Map.print_rest()
 
     if args.mod:

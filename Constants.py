@@ -1,4 +1,10 @@
 # regex used to generate this: ^\([0-9]+\)\s-+\([a-zA-Z ’å]+\)\s-+.*
+import collections
+
+Army = collections.namedtuple("Army", ["commander_type", "items", "units"])
+Unit = collections.namedtuple("Unit", ["unit_type", "count"])
+Nation = collections.namedtuple("Nation", ["age", "name"])
+
 
 gemtypes = {
     "Fire": 0,
