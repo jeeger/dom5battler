@@ -116,12 +116,14 @@ def main():
 
     if args.mod:
         if args.domdir:
-            mod_out = open(os.path.join(args.domdir, "mods",
-                                        f"Battle-{conf['battlename']}.dm"), "w")
+            mod_out = open(
+                os.path.join(args.domdir, "mods",
+                             f"Battle-{conf['battlename']}.dm"), "w")
         else:
             mod_out = open(f"Battle-{conf['battlename']}.dm", "w")
         with contextlib.redirect_stdout(mod_out):
-            Map.print_mod(conf['battlename'], conf['playernation'])
+            Map.print_mod(conf['battlename'], conf['player_1_nation'],
+                          conf.get('player_2_nation', None))
 
     if args.run and args.domdir:
         if args.mod:
