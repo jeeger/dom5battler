@@ -29,6 +29,7 @@ def from_file(filename):
     # Case sensitive option names
     conf = {}
     conf['battlename'] = os.path.splitext(os.path.basename(filename))[0]
+    conf['extra_mods'] = raw_conf.get("extra_mods", [])
     conf['player_1_nation'] = Constants.Nation(
         raw_conf['age'], raw_conf['player_1']['nation'])
     conf['player_1_armies'] = convert_units(raw_conf['player_1']['armies'])
@@ -126,10 +127,13 @@ def main():
                           conf.get('player_2_nation', None))
 
     if args.run and args.domdir:
+        modargs = []
         if args.mod:
-            os.system(f"{args.run} --enablemod Battle-{conf['battlename']}.dm")
-        else:
-            os.system(f"{args.run}")
+            modargs.append(f"-M Battle-{conf['battlename']}.dm")
+        for mod in conf.get("extra_mods", []):
+            modargs.append(f"-M {mod}.dm")
+        print(modargs)
+        os.system(f"{args.run} {' '.join(modargs)}")
         if args.mod:
             os.unlink(os.path.join(args.domdir, "mods",
                                    f"Battle-{conf['battlename']}.dm"))

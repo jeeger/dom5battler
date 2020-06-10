@@ -1,5 +1,6 @@
 {
     "age": "EA",
+    "extra_mods": ["WH_6_24"],
     "player_1": {
         "nation": "Ulm",
         "armies": [{
